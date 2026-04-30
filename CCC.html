@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AlgoVoyage — My Travel Algorithm Notes ✈️</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Indie+Flower&family=Patrick+Hand&family=Kalam:wght@300;400;700&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #fdfbf7;
+  --paper2: #f9f6f0;
+  --ink: #2d2d2d;
+  --ink-light: #5a5a5a;
+  --pencil: #7a7a7a;
+  --blue: #2563eb;
+  --green: #16a34a;
+  --orange: #ea580c;
+  --pink: #ec4899;
+  --yellow: #fde047;
+  --yellow2: #fef3c7;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+@keyframes paperTexture {
+  0% { opacity: 0.03; }
+  50% { opacity: 0.06; }
+  100% { opacity: 0.03; }
+}
+
+body {
+  font-family: 'Caveat', cursive;
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.6;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Paper texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: 
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(139,92,51,0.02) 2px, rgba(139,92,51,0.02) 4px),
+    repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(139,92,51,0.02) 2px, rgba(139,92,51,0.02) 4px);
+  pointer-events: none;
+  animation: paperTexture 4s ease-in-out infinite;
+}
+
+/* Notebook lines background */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 31px,
+    rgba(200,180,160,0.15) 31px,
+    rgba(200,180,160,0.15) 32px
+  );
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+/* Header - like title page */
+header {
+  padding: 3rem 2rem 2rem;
+  text-align: center;
+  position: relative;
+  border-bottom: 3px solid var(--ink);
+  background: linear-gradient(180deg, var(--yellow2) 0%, var(--paper) 100%);
+}
+
+header h1 {
+  font-family: 'Permanent Marker', cursive;
+  font-size: clamp(2.5rem, 6vw, 4.2rem);
+  color: var(--ink);
+  transform: rotate(-2deg);
+  display: inline-block;
+  text-shadow: 3px 3px 0 rgba(37,99,235,0.2);
+  letter-spacing: 2px;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  font-family: 'Indie Flower', cursive;
+  font-size: 1.3rem;
+  color: var(--ink-light);
+  transform: rotate(1deg);
+  display: inline-block;
+  margin-top: 0.5rem;
+}
+
+/* Hand-drawn underline */
+.underline {
+  position: relative;
+  display: inline-block;
+}
+
+.underline::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: -5%;
+  width: 110%;
+  height: 3px;
+  background: var(--blue);
+  transform: rotate(-1deg) scaleX(1.1);
+  border-radius: 50%;
+}
+
+/* Badges as stickers */
+.badges {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+
+.badge {
+  font-family: 'Patrick Hand', cursive;
+  font-size: 0.95rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 700;
+  transform: rotate(-3deg);
+  box-shadow: 2px 3px 0 rgba(0,0,0,0.15);
+  border: 2px dashed;
+  position: relative;
+}
+
+.badge:nth-child(2) { transform: rotate(2deg); }
+.badge:nth-child(3) { transform: rotate(-1deg); }
+
+.badge.greedy {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border-color: var(--green);
+  color: #166534;
+}
+
+.badge.dp {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-color: var(--blue);
+  color: #1e40af;
+}
+
+.badge.info {
+  background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+  border-color: var(--orange);
+  color: #9a3412;
+}
+
+/* Doodles */
+.doodle {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+.doodle-plane {
+  top: 20px;
+  right: 10%;
+  font-size: 3rem;
+  animation: float 6s ease-in-out infinite;
+}
+
+.doodle-star {
+  top: 50%;
+  left: 5%;
+  font-size: 2rem;
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(5deg); }
+  50% { transform: translateY(-20px) rotate(-5deg); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+/* Nav tabs - like sticky notes */
+nav {
+  display: flex;
+  gap: 0.8rem;
+  padding: 1.5rem 2rem 0;
+  flex-wrap: wrap;
+  justify-content: center;
+  position: sticky;
+  top: 0;
+  background: var(--paper);
+  z-index: 100;
+  border-bottom: 2px solid rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.nav-btn {
+  font-family: 'Patrick Hand', cursive;
+  font-size: 1.1rem;
+  padding: 0.7rem 1.3rem;
+  background: var(--yellow);
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  cursor: pointer;
+  transform: rotate(-2deg);
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+  transition: all 0.2s;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.nav-btn:hover {
+  transform: rotate(0deg) translateY(-2px);
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.3);
+}
+
+.nav-btn.active {
+  background: var(--orange);
+  color: white;
+  transform: rotate(2deg) scale(1.05);
+}
+
+/* Main content */
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+  position: relative;
+}
+
+.section {
+  display: none;
+  animation: fadeSlide 0.5s ease;
+}
+
+.section.active {
+  display: block;
+}
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateX(-20px) rotate(-1deg); }
+  to { opacity: 1; transform: translateX(0) rotate(0deg); }
+}
+
+/* Cards - like notebook pages or sticky notes */
+.card {
+  background: white;
+  border: 3px solid var(--ink);
+  border-radius: 0;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  position: relative;
+  box-shadow: 5px 5px 0 rgba(0,0,0,0.1);
+  transform: rotate(-0.5deg);
+}
+
+.card:nth-child(even) {
+  transform: rotate(0.5deg);
+}
+
+/* Hand-drawn border effect */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border: 2px solid var(--blue);
+  opacity: 0.3;
+  transform: rotate(-1deg);
+  pointer-events: none;
+}
+
+.card-title {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 1.8rem;
+  color: var(--ink);
+  margin-bottom: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+/* Highlight effect */
+.card-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40%;
+  background: var(--yellow);
+  opacity: 0.4;
+  z-index: -1;
+  transform: skewY(-1deg);
+}
+
+.tag {
+  font-family: 'Patrick Hand', cursive;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 12px;
+  font-weight: 700;
+  border: 2px solid;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transform: rotate(-3deg);
+}
+
+.tag.g {
+  background: #dcfce7;
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.tag.d {
+  background: #dbeafe;
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.complexity {
+  font-family: 'Indie Flower', cursive;
+  font-size: 1rem;
+  color: var(--pencil);
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+/* Stats - like sticky notes */
+.stats {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 1.5rem 0;
+}
+
+.stat {
+  flex: 1;
+  min-width: 120px;
+  background: linear-gradient(135deg, var(--yellow) 0%, #fef08a 100%);
+  border: 2px solid var(--ink);
+  padding: 1.2rem 1rem;
+  text-align: center;
+  transform: rotate(-2deg);
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.15);
+}
+
+.stat:nth-child(even) {
+  transform: rotate(2deg);
+}
+
+.stat .val {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 2rem;
+  color: var(--ink);
+  display: block;
+}
+
+.stat .val.g { color: var(--green); }
+.stat .val.y { color: var(--orange); }
+.stat .val.p { color: var(--pink); }
+
+.stat .lbl {
+  font-family: 'Patrick Hand', cursive;
+  font-size: 0.85rem;
+  color: var(--ink-light);
+  margin-top: 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+/* Controls - sketchy style */
+.controls {
+  background: var(--paper2);
+  border: 3px dashed var(--ink);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: 8px;
+  position: relative;
+}
+
+.controls::before {
+  content: '📝';
+  position: absolute;
+  top: -15px;
+  left: 20px;
+  font-size: 1.5rem;
+  background: var(--paper);
+  padding: 0 10px;
+}
+
+.ctrl-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+}
+
+.ctrl-row:last-child {
+  margin-bottom: 0;
+}
+
+.ctrl-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 150px;
+}
+
+.ctrl-group label {
+  font-family: 'Patrick Hand', cursive;
+  font-size: 0.95rem;
+  color: var(--ink);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+select, input[type=number], input[type=text] {
+  font-family: 'Caveat', cursive;
+  font-size: 1.2rem;
+  padding: 0.6rem 1rem;
+  border: 2px solid var(--ink);
+  background: white;
+  color: var(--ink);
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+select:focus, input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.3);
+}
+
+input[type=range] {
+  accent-color: var(--blue);
+  height: 8px;
+}
+
+/* Buttons - hand-drawn style */
+.run-btn {
+  font-family: 'Patrick Hand', cursive;
+  font-size: 1.1rem;
+  padding: 0.8rem 1.8rem;
+  background: var(--green);
+  color: white;
+  border: 3px solid var(--ink);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  transform: rotate(-1deg);
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.run-btn:hover {
+  transform: rotate(0deg) translateY(-2px);
+  box-shadow: 5px 5px 0 rgba(0,0,0,0.3);
+}
+
+.run-btn.g {
+  background: var(--green);
+}
+
+.run-btn.p {
+  background: var(--pink);
+}
+
+/* Path visualization - hand-drawn arrows */
+.path-visual {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: var(--yellow2);
+  border: 2px dashed var(--orange);
+  border-radius: 8px;
+}
+
+.city-chip {
+  font-family: 'Patrick Hand', cursive;
+  background: white;
+  border: 2px solid var(--blue);
+  border-radius: 20px;
+  padding: 0.5rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--blue);
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+  transform: rotate(-1deg);
+}
+
+.arrow-dist {
+  font-family: 'Caveat', cursive;
+  font-size: 0.9rem;
+  color: var(--pencil);
+  font-weight: 600;
+}
+
+/* Tables - notebook style */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: 'Caveat', cursive;
+  font-size: 1.1rem;
+  margin-top: 1rem;
+  border: 2px solid var(--ink);
+}
+
+th {
+  background: var(--ink);
+  color: white;
+  padding: 0.8rem 1rem;
+  text-align: left;
+  font-family: 'Patrick Hand', cursive;
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--ink);
+}
+
+td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px dashed rgba(0,0,0,0.1);
+  font-weight: 600;
+}
+
+tr:hover td {
+  background: rgba(254,240,138,0.3);
+}
+
+tr.selected td {
+  color: var(--green);
+  font-weight: 700;
+}
+
+tr.skipped td {
+  color: var(--pencil);
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* Bar charts - hand-drawn style */
+.bar-wrap {
+  background: white;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0.6rem 0;
+  font-family: 'Caveat', cursive;
+  font-size: 1rem;
+}
+
+.bar-label {
+  min-width: 120px;
+  font-weight: 700;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.bar-outer {
+  flex: 1;
+  background: var(--paper2);
+  border: 2px solid var(--ink);
+  height: 24px;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.bar-inner {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+/* Sketchy bar pattern */
+.bar-inner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 3px,
+    rgba(255,255,255,0.1) 3px,
+    rgba(255,255,255,0.1) 6px
+  );
+}
+
+.bar-val {
+  min-width: 70px;
+  font-weight: 700;
+  font-family: 'Indie Flower', cursive;
+}
+
+/* Timeline - sketchy */
+.timeline-wrap {
+  overflow-x: auto;
+  padding: 1rem 0;
+}
+
+.timeline {
+  position: relative;
+  margin-top: 1rem;
+  min-width: 600px;
+  border: 2px dashed var(--ink);
+  padding: 1rem;
+  background: var(--paper2);
+  border-radius: 8px;
+}
+
+.timeline-hours {
+  display: flex;
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.timeline-hour {
+  flex: 1;
+  text-align: center;
+  font-family: 'Patrick Hand', cursive;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-light);
+}
+
+.tl-row {
+  display: flex;
+  align-items: center;
+  margin: 0.5rem 0;
+  gap: 1rem;
+}
+
+.tl-name {
+  min-width: 150px;
+  font-family: 'Caveat', cursive;
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.tl-bg {
+  flex: 1;
+  position: relative;
+  height: 28px;
+  border-bottom: 1px dashed rgba(0,0,0,0.2);
+}
+
+.tl-bar {
+  position: absolute;
+  height: 100%;
+  border-radius: 6px;
+  border: 2px solid var(--ink);
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-family: 'Patrick Hand', cursive;
+  font-size: 0.75rem;
+  font-weight: 700;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: all 0.5s;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.15);
+}
+
+/* Coin display - like physical coins */
+.coin-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.coin {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 3px solid var(--orange);
+  border-radius: 50%;
+  padding: 1.2rem;
+  text-align: center;
+  min-width: 90px;
+  min-height: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+  transform: rotate(-5deg);
+}
+
+.coin:nth-child(even) {
+  transform: rotate(5deg);
+}
+
+.coin.used {
+  background: linear-gradient(135deg, #fde047 0%, #facc15 100%);
+  border-color: var(--green);
+  transform: scale(1.05) rotate(-3deg);
+}
+
+.coin .denom {
+  font-family: 'Permanent Marker', cursive;
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--orange);
+}
+
+.coin.used .denom {
+  color: var(--green);
+}
+
+.coin .count {
+  font-family: 'Patrick Hand', cursive;
+  font-size: 0.85rem;
+  color: var(--ink);
+  margin-top: 0.3rem;
+  font-weight: 700;
+}
+
+/* About section */
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.about-card {
+  background: white;
+  border: 3px solid var(--ink);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transform: rotate(-1deg);
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+}
+
+.about-card:nth-child(even) {
+  transform: rotate(1deg);
+}
+
+.about-card h3 {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 1.3rem;
+  margin-bottom: 0.8rem;
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.about-card h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: currentColor;
+  border-radius: 2px;
+}
+
+.about-card p {
+  font-family: 'Caveat', cursive;
+  font-size: 1.1rem;
+  color: var(--ink-light);
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+/* Footer - handwritten note */
+footer {
+  text-align: center;
+  font-family: 'Indie Flower', cursive;
+  color: var(--pencil);
+  padding: 3rem 2rem;
+  font-size: 1rem;
+  border-top: 2px dashed var(--ink);
+  margin-top: 2rem;
+  position: relative;
+}
+
+footer::before {
+  content: '✨';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  background: var(--paper);
+  padding: 0 15px;
+}
+
+/* Scribble decorations */
+.scribble {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.2;
+  z-index: 0;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--paper2);
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--pencil);
+  border-radius: 6px;
+  border: 2px solid var(--paper2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink);
+}
+
+/* Animations */
+.fade-item {
+  opacity: 0;
+  transform: translateY(10px) rotate(-1deg);
+  animation: fadeItem 0.5s forwards;
+}
+
+@keyframes fadeItem {
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+/* Wobble on hover for fun */
+.wobble:hover {
+  animation: wobble 0.5s ease-in-out;
+}
+
+@keyframes wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-2deg); }
+  75% { transform: rotate(2deg); }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="doodle doodle-plane">✈️</div>
+  <div class="doodle doodle-star">⭐</div>
+  <h1>AlgoVoyage ✈️</h1>
+  <div class="subtitle">~ my travel algorithm notebook ~</div>
+  <div class="badges">
+    <span class="badge greedy">🌿 Greedy Stuff</span>
+    <span class="badge dp">🧩 Dynamic Programming</span>
+    <span class="badge info">⏰ Algorithms & Notes</span>
+  </div>
+</header>
+
+<nav>
+  <button class="nav-btn active wobble" onclick="showSection('dijkstra',this)">🗺️ Routes</button>
+  <button class="nav-btn wobble" onclick="showSection('knapsack',this)">🎒 Packing</button>
+  <button class="nav-btn wobble" onclick="showSection('coin',this)">💰 Money</button>
+  <button class="nav-btn wobble" onclick="showSection('activity',this)">📅 Schedule</button>
+  <button class="nav-btn wobble" onclick="showSection('about',this)">ℹ️ Info</button>
+</nav>
+
+<main>
+
+<!-- ══════════ DIJKSTRA ══════════ -->
+<div id="dijkstra" class="section active">
+  <div class="card">
+    <div class="card-title">1. Finding the Shortest Path <span class="tag g">GREEDY</span></div>
+    <div class="complexity">⏱ Time: O((V+E) log V) • Space: O(V) • Uses priority queue!</div>
+    <p style="font-size:1.15rem;color:var(--ink-light);font-weight:600">Dijkstra's algorithm finds the cheapest route between cities. It's greedy - always picks the closest unvisited city first! Pretty smart, right? 🤓</p>
+  </div>
+  <div class="controls">
+    <div class="ctrl-row">
+      <div class="ctrl-group">
+        <label>🚩 Starting City</label>
+        <select id="dij-src">
+          <option>Mumbai</option><option>Delhi</option><option>Bangalore</option>
+          <option>Chennai</option><option>Hyderabad</option><option>Pune</option>
+          <option>Ahmedabad</option><option>Jaipur</option><option>Bhopal</option><option>Nagpur</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <label>🎯 Destination</label>
+        <select id="dij-dst">
+          <option>Delhi</option><option>Mumbai</option><option>Bangalore</option>
+          <option>Chennai</option><option>Hyderabad</option><option>Pune</option>
+          <option>Ahmedabad</option><option>Jaipur</option><option>Bhopal</option><option>Nagpur</option>
+        </select>
+      </div>
+      <button class="run-btn g" onclick="runDijkstra()">▶ Find My Route!</button>
+    </div>
+  </div>
+  <div id="dij-result"></div>
+</div>
+
+<!-- ══════════ KNAPSACK ══════════ -->
+<div id="knapsack" class="section">
+  <div class="card">
+    <div class="card-title">2. What to Pack? (Knapsack) <span class="tag d">DYNAMIC</span></div>
+    <div class="complexity">⏱ Time: O(n×W) • Space: O(n×W) • Bottom-up table magic!</div>
+    <p style="font-size:1.15rem;color:var(--ink-light);font-weight:600">The 0/1 knapsack problem! Pick the best stuff for your bag without going over the weight limit. Uses a 2D table to remember solutions. 🎒</p>
+  </div>
+  <div class="controls">
+    <div class="ctrl-row">
+      <div class="ctrl-group">
+        <label>⚖️ Bag Limit (kg)</label>
+        <input type="range" id="knap-cap" min="2" max="15" value="8" oninput="document.getElementById('knap-cap-val').textContent=this.value+'kg';runKnapsack()">
+      </div>
+      <span id="knap-cap-val" style="font-family:'Permanent Marker';font-size:1.5rem;color:var(--blue);align-self:center">8kg</span>
+      <button class="run-btn" onclick="runKnapsack()">▶ Pack It!</button>
+    </div>
+  </div>
+  <div id="knap-result"></div>
+</div>
+
+<!-- ══════════ COIN CHANGE ══════════ -->
+<div id="coin" class="section">
+  <div class="card">
+    <div class="card-title">3. Making Change (Coins) <span class="tag d">DYNAMIC</span></div>
+    <div class="complexity">⏱ Time: O(amount × coins) • Space: O(amount) • DP array ftw!</div>
+    <p style="font-size:1.15rem;color:var(--ink-light);font-weight:600">Find the minimum number of coins needed for any rupee amount. Tries every coin at each step and picks the best combo! 💸</p>
+  </div>
+  <div class="controls">
+    <div class="ctrl-row">
+      <div class="ctrl-group">
+        <label>💵 How much rupees?</label>
+        <input type="number" id="coin-amount" value="1337" min="1" max="9999" style="max-width:180px">
+      </div>
+      <button class="run-btn p" onclick="runCoin()">▶ Break It Down!</button>
+    </div>
+  </div>
+  <div id="coin-result"></div>
+</div>
+
+<!-- ══════════ ACTIVITY ══════════ -->
+<div id="activity" class="section">
+  <div class="card">
+    <div class="card-title">4. Planning My Day (Activities) <span class="tag g">GREEDY</span></div>
+    <div class="complexity">⏱ Time: O(n log n) • Space: O(n) • Sort by finish time!</div>
+    <p style="font-size:1.15rem;color:var(--ink-light);font-weight:600">Activity selection picks the max non-overlapping activities. The greedy trick: always choose the one that ends earliest! Works every time. 📆</p>
+  </div>
+  <div class="controls">
+    <div class="ctrl-row" style="align-items:center">
+      <span style="font-size:1rem;color:var(--ink-light);font-weight:600">Click activity names to toggle them on/off, or add your own:</span>
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-group">
+        <label>📌 Activity Name</label>
+        <input type="text" id="act-name" placeholder="Beach time?" style="max-width:200px">
+      </div>
+      <div class="ctrl-group">
+        <label>🕐 Start Hour</label>
+        <input type="number" id="act-start" value="10" min="6" max="23" style="max-width:100px">
+      </div>
+      <div class="ctrl-group">
+        <label>🕑 End Hour</label>
+        <input type="number" id="act-end" value="12" min="7" max="24" style="max-width:100px">
+      </div>
+      <button class="run-btn g" onclick="addActivity()">+ Add It</button>
+      <button class="run-btn" onclick="runActivity()">▶ Make Schedule!</button>
+    </div>
+  </div>
+  <div id="act-result"></div>
+</div>
+
+<!-- ══════════ ABOUT ══════════ -->
+<div id="about" class="section">
+  <div class="card">
+    <div class="card-title" style="font-size:2rem">🎯 What's This All About?</div>
+    <p style="font-size:1.2rem;color:var(--ink-light);margin-top:1rem;line-height:1.7;font-weight:600">
+      AlgoVoyage is my travel-themed algorithm notebook! 📓 Each section shows a different classic algorithm in action. It's like learning CS while planning a trip! 
+    </p>
+  </div>
+  <div class="about-grid">
+    <div class="about-card wobble">
+      <h3 style="color:var(--green)">🗺️ Dijkstra's Path</h3>
+      <p>Greedy shortest path finder using a min-heap. Connects 14 Indian cities with real-ish distances. Always picks the closest unvisited node!</p>
+    </div>
+    <div class="about-card wobble">
+      <h3 style="color:var(--blue)">🎒 Knapsack Packing</h3>
+      <p>Bottom-up dynamic programming to maximize value in limited space. Classic optimization - O(nW) complexity with a 2D table!</p>
+    </div>
+    <div class="about-card wobble">
+      <h3 style="color:var(--orange)">💰 Coin Change</h3>
+      <p>DP array approach for minimum coins. Works with Indian rupee denominations (₹1 to ₹500). Builds up from smaller amounts!</p>
+    </div>
+    <div class="about-card wobble">
+      <h3 style="color:var(--pink)">📅 Activity Planner</h3>
+      <p>Greedy interval scheduling! Sort by finish time, pick non-overlapping activities. Provably gives the optimal solution every time!</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📁 Project Files</div>
+    <pre style="font-family:'Indie Flower',monospace;font-size:1rem;color:var(--ink-light);margin-top:1rem;line-height:2;font-weight:600">
+AlgoVoyage/
+├── main.py                    ← starts everything
+├── algorithms/
+│   ├── dijkstra.py            ← greedy min-heap
+│   ├── knapsack.py            ← 2D DP table
+│   ├── coin_change.py         ← 1D DP array
+│   └── activity_selection.py  ← greedy sort
+├── utils/
+│   ├── reporter.py            ← makes HTML
+│   └── display.py             ← pretty prints
+└── output/
+    └── report.html            ← you are here! 📍</pre>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  Made with ❤️ for my algorithms class • All coded from scratch in Python • Have fun exploring! ✨
+</footer>
+
+<script>
+// ═══════════════ DATA (same as before) ═══════════════
+const GRAPH = {
+  "Mumbai":    {"Pune":150,"Surat":280,"Nashik":170},
+  "Pune":      {"Mumbai":150,"Hyderabad":560,"Nashik":210},
+  "Surat":     {"Mumbai":280,"Ahmedabad":130,"Vadodara":100},
+  "Nashik":    {"Mumbai":170,"Pune":210,"Aurangabad":110},
+  "Ahmedabad": {"Surat":130,"Vadodara":100,"Delhi":900},
+  "Vadodara":  {"Surat":100,"Ahmedabad":100,"Bhopal":440},
+  "Hyderabad": {"Pune":560,"Bangalore":570,"Chennai":630},
+  "Aurangabad":{"Nashik":110,"Hyderabad":500},
+  "Bhopal":    {"Vadodara":440,"Delhi":770,"Nagpur":350},
+  "Delhi":     {"Ahmedabad":900,"Bhopal":770,"Jaipur":270},
+  "Bangalore": {"Hyderabad":570,"Chennai":350},
+  "Chennai":   {"Hyderabad":630,"Bangalore":350},
+  "Nagpur":    {"Bhopal":350,"Hyderabad":500},
+  "Jaipur":    {"Delhi":270,"Ahmedabad":660}
+};
+
+const ITEMS = [
+  {name:"Laptop",weight:3,value:90},
+  {name:"Camera",weight:2,value:70},
+  {name:"Clothes",weight:4,value:50},
+  {name:"Books",weight:5,value:30},
+  {name:"Medicines",weight:1,value:80},
+  {name:"Shoes",weight:3,value:40},
+  {name:"Power Bank",weight:1,value:60},
+  {name:"Snacks",weight:2,value:20},
+  {name:"Travel Pillow",weight:1,value:35},
+  {name:"Umbrella",weight:1,value:45},
+];
+
+const COINS = [1,5,10,20,50,100,200,500];
+
+let activities = [
+  {name:"Museum Visit",start:9,end:11,active:true},
+  {name:"City Walk",start:10,end:12,active:true},
+  {name:"Lunch at Dhaba",start:12,end:13,active:true},
+  {name:"Fort Tour",start:13,end:15,active:true},
+  {name:"Boat Ride",start:14,end:16,active:true},
+  {name:"Shopping",start:15,end:17,active:true},
+  {name:"Sunset Point",start:17,end:18,active:true},
+  {name:"Dinner & Culture",start:18,end:20,active:true},
+  {name:"Night Safari",start:19,end:21,active:true},
+  {name:"Star Gazing",start:21,end:23,active:true},
+];
+
+// ═══════════════ NAV ═══════════════
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ═══════════════ DIJKSTRA ═══════════════
+function dijkstra(graph, src, dst) {
+  const dist = {}, prev = {}, visited = new Set();
+  for(const n in graph) dist[n] = Infinity;
+  dist[src] = 0;
+  const heap = [[0,src]];
+  while(heap.length) {
+    heap.sort((a,b)=>a[0]-b[0]);
+    const [d, u] = heap.shift();
+    if(visited.has(u)) continue;
+    visited.add(u);
+    for(const [v,w] of Object.entries(graph[u]||{})) {
+      if(d+w < dist[v]) { dist[v]=d+w; prev[v]=u; heap.push([dist[v],v]); }
+    }
+  }
+  const path=[]; let n=dst;
+  while(n){ path.unshift(n); n=prev[n]; if(n===src){path.unshift(src);break;} }
+  if(path[0]!==src) return {dist:Infinity,path:[]};
+  return {dist:dist[dst],path};
+}
+
+function runDijkstra() {
+  const src = document.getElementById('dij-src').value;
+  const dst = document.getElementById('dij-dst').value;
+  const el = document.getElementById('dij-result');
+  if(src===dst){el.innerHTML=`<div class="card" style="border-color:var(--orange);background:#fef3c7"><span style="font-size:1.3rem">⚠️ Hey! The start and end are the same city!</span></div>`;return;}
+  const {dist,path} = dijkstra(GRAPH,src,dst);
+  if(!path.length||dist===Infinity){
+    el.innerHTML=`<div class="card" style="border-color:#ef4444;background:#fee2e2"><span style="font-size:1.3rem">❌ Oops! Can't find a route from ${src} to ${dst}.</span></div>`;return;
+  }
+  
+  const allDist = {};
+  for(const city in GRAPH){ const r=dijkstra(GRAPH,src,city); allDist[city]=r.dist; }
+  const sorted = Object.entries(allDist).filter(([c])=>c!==src&&allDist[c]!==Infinity).sort((a,b)=>a[1]-b[1]);
+  const maxD = Math.max(...sorted.map(x=>x[1]));
+
+  let pathHTML = path.map((city,i)=>{
+    if(i<path.length-1){
+      const w = GRAPH[path[i]][path[i+1]];
+      return `<span class="city-chip">${city}</span><span class="arrow-dist">→ ${w}km →</span>`;
+    }
+    return `<span class="city-chip" style="border-color:var(--green);color:var(--green);background:#dcfce7">${city} ✓</span>`;
+  }).join('');
+
+  let barRows = sorted.map(([city,d])=>`
+    <div class="bar-row fade-item">
+      <div class="bar-label">${city}</div>
+      <div class="bar-outer"><div class="bar-inner" style="width:${(d/maxD*100).toFixed(1)}%;background:${city===dst?'linear-gradient(135deg,var(--green),#059669)':'linear-gradient(135deg,var(--blue),#1d4ed8)'}">&nbsp;</div></div>
+      <div class="bar-val">${d}km ${city===dst?'✓':''}</div>
+    </div>`).join('');
+
+  el.innerHTML = `
+    <div class="card">
+      <div class="stats">
+        <div class="stat"><div class="val">${src}</div><div class="lbl">Start</div></div>
+        <div class="stat"><div class="val g">${dst}</div><div class="lbl">Finish</div></div>
+        <div class="stat"><div class="val">${dist}km</div><div class="lbl">Distance</div></div>
+        <div class="stat"><div class="val y">${path.length-1}</div><div class="lbl">Hops</div></div>
+      </div>
+      <div style="margin:1rem 0 .5rem;font-size:1.1rem;color:var(--ink);font-family:'Patrick Hand';font-weight:700">✨ The Best Route:</div>
+      <div class="path-visual">${pathHTML}</div>
+    </div>
+    <div class="card">
+      <div style="font-size:1.2rem;font-weight:700;color:var(--ink);margin-bottom:1rem;font-family:'Patrick Hand'">📊 All distances from ${src}:</div>
+      <div class="bar-wrap">${barRows}</div>
+    </div>
+    <div class="card">
+      <div style="font-size:1.2rem;font-weight:700;color:var(--ink);margin-bottom:1rem;font-family:'Patrick Hand'">🔍 Step-by-step breakdown:</div>
+      <table>
+        <tr><th>From</th><th>To</th><th>Distance</th><th>Total So Far</th></tr>
+        ${path.slice(0,-1).map((city,i)=>{
+          const w=GRAPH[path[i]][path[i+1]];
+          const cum=path.slice(0,i+2).reduce((s,c,j)=>j>0?s+GRAPH[path[j-1]][c]:s,0);
+          return `<tr><td><span style="color:var(--blue);font-weight:700">${city}</span></td><td>${path[i+1]}</td><td>${w}km</td><td>${cum}km</td></tr>`;
+        }).join('')}
+      </table>
+    </div>`;
+  
+  setTimeout(()=>{
+    document.querySelectorAll('#dij-result .bar-inner').forEach((b,i)=>{
+      const w=b.style.width;b.style.width='0';
+      setTimeout(()=>{b.style.width=w},50+i*40);
+    });
+  },50);
+}
+
+// ═══════════════ KNAPSACK ═══════════════
+function runKnapsack() {
+  const cap = parseInt(document.getElementById('knap-cap').value);
+  const n = ITEMS.length, W = cap;
+  const dp = Array.from({length:n+1},()=>new Array(W+1).fill(0));
+  for(let i=1;i<=n;i++){
+    const {weight:w,value:v}=ITEMS[i-1];
+    for(let c=0;c<=W;c++){
+      dp[i][c]=dp[i-1][c];
+      if(w<=c) dp[i][c]=Math.max(dp[i][c],dp[i-1][c-w]+v);
+    }
+  }
+  
+  const selected=new Set();
+  let c=W;
+  for(let i=n;i>0;i--){
+    if(dp[i][c]!==dp[i-1][c]){selected.add(i-1);c-=ITEMS[i-1].weight;}
+  }
+  const totalVal=dp[n][W];
+  const totalW=[...selected].reduce((s,i)=>s+ITEMS[i].weight,0);
+  const el=document.getElementById('knap-result');
+  const maxV=Math.max(...ITEMS.map(it=>it.value));
+
+  el.innerHTML=`
+    <div class="card">
+      <div class="stats">
+        <div class="stat"><div class="val">${cap}kg</div><div class="lbl">Limit</div></div>
+        <div class="stat"><div class="val g">${totalW}kg</div><div class="lbl">Used</div></div>
+        <div class="stat"><div class="val p">${totalVal}pts</div><div class="lbl">Value</div></div>
+        <div class="stat"><div class="val y">${selected.size}/${n}</div><div class="lbl">Items</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:1.2rem;font-weight:700;color:var(--ink);margin-bottom:1rem;font-family:'Patrick Hand'">📊 Items by value:</div>
+      <div class="bar-wrap">
+        ${ITEMS.map((it,i)=>`
+          <div class="bar-row fade-item" style="animation-delay:${i*40}ms">
+            <div class="bar-label" style="color:${selected.has(i)?'var(--green)':'var(--pencil)'}">${selected.has(i)?'✅':'❌'} ${it.name}</div>
+            <div class="bar-outer">
+              <div class="bar-inner" style="width:0%;background:${selected.has(i)?'linear-gradient(135deg,var(--green),#059669)':'linear-gradient(135deg,#cbd5e1,#94a3b8)'}" data-w="${(it.value/maxV*100).toFixed(1)}"></div>
+            </div>
+            <div class="bar-val">${it.value}pts • ${it.weight}kg</div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:1.2rem;font-weight:700;color:var(--ink);margin-bottom:1rem;font-family:'Patrick Hand'">📋 Everything I could pack:</div>
+      <table>
+        <tr><th>Item</th><th>Weight</th><th>Value</th><th>Per kg</th><th>Status</th></tr>
+        ${ITEMS.map((it,i)=>`
+          <tr class="${selected.has(i)?'selected':'skipped'}">
+            <td>${it.name}</td><td>${it.weight}kg</td><td>${it.value}pts</td>
+            <td>${(it.value/it.weight).toFixed(1)}</td>
+            <td>${selected.has(i)?'✅ Packed':'❌ Left behind'}</td>
+          </tr>`).join('')}
+      </table>
+    </div>`;
+  setTimeout(()=>{
+    document.querySelectorAll('#knap-result .bar-inner').forEach((b,i)=>{
+      setTimeout(()=>{b.style.width=b.dataset.w+'%';},30+i*50);
+    });
+  },50);
+}
+
+// ═══════════════ COIN CHANGE ═══════════════
+function runCoin() {
+  const amount = parseInt(document.getElementById('coin-amount').value)||0;
+  if(amount<=0||amount>9999){alert('Please enter an amount between 1 and 9999 rupees!');return;}
+  const dp=new Array(amount+1).fill(Infinity); dp[0]=0;
+  const choice=new Array(amount+1).fill(-1);
+  for(let i=1;i<=amount;i++){
+    for(const c of COINS){
+      if(c<=i && dp[i-c]+1<dp[i]){ dp[i]=dp[i-c]+1; choice[i]=c; }
+    }
+  }
+  const breakdown={};
+  let cur=amount;
+  while(cur>0){ const c=choice[cur]; breakdown[c]=(breakdown[c]||0)+1; cur-=c; }
+  const sorted=Object.entries(breakdown).sort((a,b)=>b[0]-a[0]);
+  const el=document.getElementById('coin-result');
+  el.innerHTML=`
+    <div class="card">
+      <div class="stats">
+        <div class="stat"><div class="val y">₹${amount}</div><div class="lbl">Target</div></div>
+        <div class="stat"><div class="val p">${dp[amount]}</div><div class="lbl">Coins</div></div>
+      </div>
+      <div style="font-size:1.1rem;color:var(--ink);margin:1.5rem 0 1rem;font-family:'Patrick Hand';font-weight:700">💰 Which coins to use:</div>
+      <div class="coin-grid">
+        ${COINS.slice().reverse().map(c=>{
+          const cnt=breakdown[c]||0;
+          return `<div class="coin ${cnt?'used':''} wobble"><div class="denom">₹${c}</div><div class="count">${cnt?'×'+cnt:'—'}</div></div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:1.2rem;font-weight:700;color:var(--ink);margin-bottom:1rem;font-family:'Patrick Hand'">🧮 The math breakdown:</div>
+      <table>
+        <tr><th>Coin</th><th>How Many</th><th>Subtotal</th></tr>
+        ${sorted.map(([d,cnt])=>`<tr class="selected"><td>₹${d}</td><td>×${cnt}</td><td>₹${d*cnt}</td></tr>`).join('')}
+        <tr style="border-top:2px solid var(--ink)"><td colspan="2" style="font-weight:700;color:var(--blue);font-family:'Permanent Marker'">Total</td><td style="color:var(--green);font-weight:700;font-family:'Permanent Marker'">₹${amount}</td></tr>
+      </table>
+    </div>`;
+}
+
+// ═══════════════ ACTIVITY SELECTION ═══════════════
+function addActivity() {
+  const name=document.getElementById('act-name').value.trim();
+  const start=parseInt(document.getElementById('act-start').value);
+  const end=parseInt(document.getElementById('act-end').value);
+  if(!name||isNaN(start)||isNaN(end)||start>=end){alert('Hmm, need a name and start time before end time!');return;}
+  activities.push({name,start,end,active:true});
+  document.getElementById('act-name').value='';
+  runActivity();
+}
+
+function toggleActivity(i) {
+  activities[i].active=!activities[i].active;
+  runActivity();
+}
+
+function runActivity() {
+  const pool=activities.filter(a=>a.active).sort((a,b)=>a.end-b.end);
+  const selected=[];
+  let lastEnd=-Infinity;
+  for(const a of pool){
+    if(a.start>=lastEnd){ selected.push(a); lastEnd=a.end; }
+  }
+  const selectedSet=new Set(selected.map(a=>a.name+a.start+a.end));
+  const el=document.getElementById('act-result');
+  const minH=Math.min(...activities.map(a=>a.start));
+  const maxH=Math.max(...activities.map(a=>a.end));
+  const span=maxH-minH;
+  const hours=[];for(let h=minH;h<=maxH;h++)hours.push(h);
+  const colors=['#2563eb','#16a34a','#a855f7','#ea580c','#ef4444','#10b981','#3b82f6','#f97316','#e879f9','#22c55e'];
+
+  el.innerHTML=`
+    <div class="card">
+      <div class="stats">
+        <div class="stat"><div class="val">${pool.length}</div><div class="lbl">Options</div></div>
+        <div class="stat"><div class="val g">${selected.length}</div><div class="lbl">Picked</div></div>
+        <div class="stat"><div class="val y">${pool.length-selected.length}</div><div class="lbl">Skipped</div></div>
+        <div class="stat"><div class="val p">${selected.reduce((s,a)=>s+a.end-a.start,0)}h</div><div class="lbl">Time</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:1.2rem;font-weight:700;color:var(--ink);margin-bottom:1rem;font-family:'Patrick Hand'">📅 My schedule timeline <span style="font-size:.9rem;color:var(--pencil);font-weight:600">(click names to toggle!)</span></div>
+      <div class="timeline-wrap">
+        <div class="timeline">
+          <div class="timeline-hours">${hours.map(h=>`<div class="timeline-hour">${h}:00</div>`).join('')}</div>
+          ${activities.map((a,i)=>{
+            const isOn=a.active;
+            const isSel=selectedSet.has(a.name+a.start+a.end);
+            const left=((a.start-minH)/span*100).toFixed(2);
+            const width=((a.end-a.start)/span*100).toFixed(2);
+            const c=colors[i%colors.length];
+            return `<div class="tl-row">
+              <div class="tl-name" style="cursor:pointer;color:${isOn?(isSel?'var(--green)':'var(--ink)'):'var(--pencil)'};text-decoration:${isOn?'none':'line-through'}"
+                onclick="toggleActivity(${activities.indexOf(a)})">${a.name}</div>
+              <div class="tl-bg">
+                <div class="tl-bar" style="left:${left}%;width:${width}%;background:${isOn?(isSel?c:'#cbd5e1'):'#f1f5f9'};border-color:${isOn?(isSel?'var(--ink)':'#94a3b8'):'#cbd5e1'};color:${isOn?(isSel?'white':'var(--pencil)'):'var(--pencil)'}">
+                  ${isSel?'✓':''}
+                </div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:1.2rem;font-weight:700;color:var(--ink);margin-bottom:1rem;font-family:'Patrick Hand'">✅ What I'm doing today:</div>
+      <table>
+        <tr><th>#</th><th>Activity</th><th>Start</th><th>End</th><th>Hours</th></tr>
+        ${selected.map((a,i)=>`
+          <tr class="selected">
+            <td>${i+1}</td><td>✅ ${a.name}</td><td>${a.start}:00</td><td>${a.end}:00</td><td>${a.end-a.start}h</td>
+          </tr>`).join('')}
+        ${pool.filter(a=>!selectedSet.has(a.name+a.start+a.end)).map(a=>`
+          <tr class="skipped"><td>—</td><td>❌ ${a.name}</td><td>${a.start}:00</td><td>${a.end}:00</td><td>${a.end-a.start}h</td></tr>`).join('')}
+      </table>
+    </div>`;
+}
+
+// ═══════════════ INIT ═══════════════
+runDijkstra();
+setTimeout(()=>{runKnapsack();runCoin();runActivity();},100);
+</script>
+</body>
+</html>
