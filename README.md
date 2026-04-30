@@ -1,5 +1,4 @@
-# AlgoVoyage
-Travel Algorithm Notebook
+
 # ✈️ AlgoVoyage — Travel Algorithm Notebook
 
 AlgoVoyage is an interactive, travel-themed web application that visualizes classic algorithms in a fun and intuitive way. It combines computer science concepts with real-world travel scenarios to make learning engaging and easy.
